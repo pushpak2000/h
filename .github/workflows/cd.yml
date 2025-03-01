@@ -1,18 +1,19 @@
 name: CD
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 
 jobs:
-
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: delete old container make sure to make it error free
+        run: sudo docker rm -f rops-cont ||  true
+      - name: pull from docker hub reg
+        run: sudo docker pull gitkeeper05/rops:latest
+      - name: Run
+        run: sudo docker run -d -p 8080:80 --name rops-cont gitkeeper05/rops:latest
